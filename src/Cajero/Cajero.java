@@ -32,8 +32,10 @@ public class Cajero  {
 		DNI=new BufferedReader(new InputStreamReader(System.in)).readLine();
 		System.out.print("Seleccione el numero de dias que se alojara con nosotros: ");
 		numeroDias =new BufferedReader(new InputStreamReader(System.in)).readLine();
-		mensaje="1-"+nombre+" "+DNI+" "+numeroDias;
-		crearSocket(mensaje);
+		mensaje="1-"+nombre+"/"+DNI+"/"+numeroDias;
+		crearSocket(mensaje,3000);
+		crearSocket(mensaje,3050);
+
 		break;
 	case 2:
 		 //crea los datos
@@ -41,20 +43,27 @@ public class Cajero  {
 		nombre=new BufferedReader(new InputStreamReader(System.in)).readLine();
 		System.out.print("Escriba su DNI(como lo escribio en el registro):");
 		DNI=new BufferedReader(new InputStreamReader(System.in)).readLine();
-		mensaje="2-"+nombre+" "+DNI;	
-		crearSocket(mensaje);
+		mensaje="2-"+nombre+"/"+DNI;	
+		crearSocket(mensaje,3000);
 		break;
 	case 3:
 		//crea los datos
 		
 		System.out.print("Escriba su DNI(como lo escribio en el registro):");
 		DNI=new BufferedReader(new InputStreamReader(System.in)).readLine();
-		mensaje="2-"+DNI;	
-		crearSocket(mensaje);
+		mensaje="3-"+DNI;	
+		crearSocket(mensaje,3000);
 		break;
 	case 4://leerlo tranquilamente
 		break;
 	case 5://liberar ip 
+		System.out.print("Escriba su nombre (como lo escribio en el registro):");
+		nombre=new BufferedReader(new InputStreamReader(System.in)).readLine();
+		System.out.print("Escriba su DNI(como lo escribio en el registro):");
+		DNI=new BufferedReader(new InputStreamReader(System.in)).readLine();
+		mensaje="5-"+nombre+"/"+DNI;	
+		crearSocket(mensaje,3000);
+		crearSocket(mensaje,3050);
 		break;
 	default:
 		
@@ -62,9 +71,8 @@ public class Cajero  {
 	
 }
 	 
-public static void crearSocket(String mensaje) throws IOException{
+public static void crearSocket(String mensaje, int serverPort) throws IOException{
 	InetAddress serverAddress = InetAddress.getByName("localhost");
-	int serverPort = 3000;
 	byte[] bytesToSend = mensaje.getBytes();
 	DatagramSocket socket = new DatagramSocket();
 	DatagramPacket sendPacket = new DatagramPacket(bytesToSend,bytesToSend.length,serverAddress, serverPort);

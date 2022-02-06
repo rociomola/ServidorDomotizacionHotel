@@ -1,20 +1,15 @@
 package Server;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.Scanner;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 public class ConcurrentServerUDP {
     static FileWriter fr;
     static int id=0;
-    static String ruta ="E:\\ProyectoSocket\\src\\archivo.txt";
+    static String ruta ="archivo.txt";
         public static void main(String[] args) throws IOException {
         DatagramSocket ds = null;
         try {
@@ -23,6 +18,7 @@ public class ConcurrentServerUDP {
             ds = new DatagramSocket(wellKnownPort, localAddr);
             byte[] buffer = new byte[2048];
             DatagramPacket datagram = new DatagramPacket(buffer,buffer.length);
+            byte[] mandamensaje = new byte[2048];
             while (true) {
                 ds.receive(datagram);
                 System.out.println("Nueva peticion de servicio");
@@ -35,12 +31,34 @@ public class ConcurrentServerUDP {
                 String part2 = parts[1]; // 654321
                 switch(Integer.parseInt (part1)){
                     case 1:
-                     part2= part2+" "+id++;
+                     part2= part2+"/"+id++;
                      escribirFichero(part2);
+                     parts=part2.split("/");
+                     String mensaje = "Se ha registrado el usuario "+parts[0]+" con el dni "+parts[1] +"con una estancia de "+parts[2]+" en el sistema";
+                     mandamensaje = mensaje.getBytes();
                      break;
                     case 2:
                     buscar(part2);
+                    break;
+                    case 3:
+                    buscar(part2);
+                    case 4:
+                    break;
+                    case 5:
+                    eliminarFilas(part2);
+                    break;
                 }
+                //Obtengo el puerto y la direccion de origen
+                //Sino se quiere responder, no es necesario
+                int puertoCliente = datagram.getPort();
+                InetAddress direccion = datagram.getAddress();
+               
+                //creo el datagrama
+                DatagramPacket respuesta = new DatagramPacket(mandamensaje, mandamensaje.length, direccion, puertoCliente);
+ 
+                //Envio la información
+                System.out.println("Envio la informacion del cliente");
+                ds.send(respuesta);
             }
         } catch (IOException e) {
             System.err.println("Error E/S en: " + e.getMessage());}
@@ -75,7 +93,8 @@ public class ConcurrentServerUDP {
                     System.out.println("se ha escrito bien");
                 }
                 bw.close();
-
+                pw.close();
+                
             } catch (Exception e) {
                 
                 System.out.println("Ha sucedido un error al escribir los datos"+e);
@@ -96,6 +115,7 @@ public class ConcurrentServerUDP {
                     if (linea.contains(texto)) {   //si la línea contiene el texto buscado se muestra por pantalla         
                         System.out.println(linea);
                         contiene = true;
+                    
                     }
                 }
                 if(!contiene){ //si el archivo no contienen el texto se muestra un mensaje indicándolo
@@ -111,7 +131,23 @@ public class ConcurrentServerUDP {
                 if (entrada != null) {
                     entrada.close();
                 }
+
             }
-            
         }
-} 
+        static public void eliminarFilas(String cadena) throws IOException{
+            BufferedReader br = new BufferedReader(new FileReader(ruta));
+            List<String> lineas = new ArrayList<String>();
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                lineas.add(linea);
+            }
+            lineas = lineas.stream().filter(x -> !x.contains(cadena)).collect(Collectors.toList());
+            FileWriter fw = new FileWriter(ruta);
+            BufferedWriter bw = new BufferedWriter(fw);
+            for (String linea2 : lineas) {
+                bw.write(linea2);
+                bw.newLine();
+            }
+            bw.close();
+        }
+}
